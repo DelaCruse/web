@@ -37,10 +37,12 @@ const forms = {
   itemTimings: {
     queryForms: ['hero_id', 'item'],
     filterForms: ['time'],
+    initialQuery: { hero_id: '1', item: 'bfury' },
   },
   laneRoles: {
     queryForms: ['hero_id', 'lane_role'],
     filterForms: ['time'],
+    initialQuery: { hero_id: '101', lane_role: '2' },
   },
   misc: {
     queryForms: ['scenario'],
@@ -98,9 +100,15 @@ class Scenarios extends React.Component {
 
     const selectedTab = this.props.match.params.info || 'itemTimings';
     const params = this.props.location.search.substring(1);
+
+    const initialQueries = {};
+    Object.keys(forms).forEach((tab) => {
+      initialQueries[tab] = (selectedTab === tab && Object.keys(querystring.parse(params)).length > 0) ? querystring.parse(params) : forms[tab].initialQuery;
+    });
+
     this.state = {
       selectedTab,
-      formFields: { [selectedTab]: querystring.parse(params) || null },
+      formFields: initialQueries,
     };
     this.updateFormFieldStates();
 
@@ -111,6 +119,7 @@ class Scenarios extends React.Component {
 
   componentDidMount() {
     this.getData();
+    this.updateQueryParams();
   }
 
   getData() {
@@ -134,8 +143,7 @@ class Scenarios extends React.Component {
 
   updateQueryParams() {
     const { formFields, selectedTab } = this.state;
-    const { location } = this.props;
-    this.props.history.push(`${location.pathname}?${querystring.stringify(formFields[selectedTab])}`);
+    this.props.history.push(`/scenarios/${selectedTab}?${querystring.stringify(formFields[selectedTab])}`);
   }
 
   updateFormFieldStates(newFormFieldState) {
